@@ -6,13 +6,13 @@ import { AppSidebar } from './component/app-sidebar';
 
 const layout = ({ children }: { children: ReactNode }) => {
     return (
-         <SidebarProvider>
-      <AppSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
-    </SidebarProvider>
+        <SidebarProvider>
+            <AppSidebar />
+            <main>
+                <SidebarTrigger />
+                {children}
+            </main>
+        </SidebarProvider>
     );
 };
 

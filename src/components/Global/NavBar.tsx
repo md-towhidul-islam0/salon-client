@@ -36,12 +36,13 @@ type SessionUser = {
   image?: string | null;
 };
 
-const defaultLinks: NavItem[] = [
-  { label: "Home", href: "/", active: true },
-  { label: "Services", href: "/services" },
-  { label: "Salon Details", href: "/salon-details" },
-  { label: "Dashboard", href: "/dashboard" },
-];
+
+// const defaultLinks: NavItem[] = [
+//   { label: "Home", href: "/", active: true },
+//   { label: "Services", href: "/services" },
+//   { label: "Salon Details", href: "/salon-details" },
+//   { label: "Dashboard", href: "/dashboard" },
+// ];
 
 const defaultActions: NavItem[] = [
   { label: "Sign In", href: "/SignIn" },
@@ -53,9 +54,8 @@ export function NavLink({ label, href, active }: NavItem) {
   return (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors hover:text-accent ${
-        active ? "text-accent" : "text-foreground"
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-accent ${active ? "text-accent" : "text-foreground"
+        }`}
     >
       {label}
     </Link>
@@ -138,9 +138,8 @@ function MobileNavLinks({
           key={link.href}
           href={link.href}
           onClick={onNavigate}
-          className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent ${
-            link.active ? "bg-accent/10 text-accent" : "text-foreground"
-          }`}
+          className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent ${link.active ? "bg-accent/10 text-accent" : "text-foreground"
+            }`}
         >
           {link.label}
           <ChevronRight aria-hidden="true" className="size-4 opacity-60" />
@@ -213,9 +212,8 @@ function UserMenu({
         </span>
         <ChevronDown
           aria-hidden="true"
-          className={`size-4 text-muted-foreground transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""
+            }`}
         />
       </button>
 
@@ -283,13 +281,18 @@ function UserMenu({
 
 export default function NavBar({
   logo = "HeairSalon",
-  links = defaultLinks,
   actions = defaultActions,
   dashboardHref = "/dashboard",
 }: NavBarProps) {
   const { data: session, isPending } = authClient.useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileRef = useRef<HTMLDivElement>(null);
+  const links: NavItem[] = [
+    { label: "Home", href: "/", active: true },
+    { label: "Services", href: "/services" },
+    { label: "Salon Details", href: "/salon-details" },
+    { label: "Dashboard", href: `/${session?.user.role}` },
+  ];
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -319,9 +322,9 @@ export default function NavBar({
           href="/"
           className="text-xl font-bold text-foreground md:text-2xl"
         >
-         <span className="text-2xl font-bold">
-                Heair<span className="text-[#f7ac9b]">Salon</span>
-              </span>
+          <span className="text-2xl font-bold">
+            Heair<span className="text-[#f7ac9b]">Salon</span>
+          </span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -390,11 +393,10 @@ export default function NavBar({
                           key={action.href}
                           href={action.href}
                           onClick={() => setMobileOpen(false)}
-                          className={`rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-colors ${
-                            index === actions.length - 1
+                          className={`rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-colors ${index === actions.length - 1
                               ? "bg-foreground text-background hover:bg-accent hover:text-white"
                               : "border border-border text-foreground hover:bg-muted"
-                          }`}
+                            }`}
                         >
                           {action.label}
                         </Link>
