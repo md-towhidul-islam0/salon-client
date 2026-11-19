@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 import ThemeToggle from "./ThemeToggle";
+import { Button } from "@base-ui/react";
 
 type NavItem = {
   label: string;
@@ -32,6 +33,7 @@ const defaultLinks: NavItem[] = [
   { label: "Home", href: "/", active: true },
   { label: "Services", href: "/services" },
   { label: "Salon Details", href: "/salon-details" },
+  { label: "Dashboard", href: "/dashboard" },
 ];
 
 const defaultActions: NavItem[] = [
@@ -44,9 +46,8 @@ export function NavLink({ label, href, active }: NavItem) {
   return (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors hover:text-accent ${
-        active ? "text-accent" : "text-foreground"
-      }`}
+      className={`text-sm font-medium transition-colors hover:text-accent ${active ? "text-accent" : "text-foreground"
+        }`}
     >
       {label}
     </Link>
@@ -145,6 +146,10 @@ function UserMenu({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
+  const HandleLogout=async()=>{
+    await authClient.signOut();
+    console.log("LOg Out")
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -163,9 +168,8 @@ function UserMenu({
         </span>
         <ChevronDown
           aria-hidden="true"
-          className={`size-4 text-muted-foreground transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""
+            }`}
         />
       </button>
 
@@ -203,7 +207,7 @@ function UserMenu({
               </span>
             </Link>
           </div>
-          <div className={`rounded-md px-5 py-2 text-sm font-medium transition-colors bg-foreground text-background hover:bg-accent hover:text-white`}>LOgOut</div>
+          <Button onClick={()=>HandleLogout()} className=" grid justify-center items-center ml-20 mt-10 mb-10">    <div className={`rounded-md px-5 py-2 text-sm font-medium transition-colors bg-red-700 text-background hover:bg-accent hover:text-white`}>LOgOut</div> </Button>
         </div>
       ) : null}
     </div>
