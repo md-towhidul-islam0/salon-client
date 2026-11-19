@@ -52,7 +52,8 @@ export default function SignUpPage() {
     setForm((previous) => ({ ...previous, [key]: value }));
   }
 
-  function readImage(file?: File) {
+  async function readImage(file?: File) {
+    
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       setError("Please choose an image file.");
@@ -62,16 +63,23 @@ export default function SignUpPage() {
       setError("Image must be smaller than 2 MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") setImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append("image", file);
+    const imgbbAPI=`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
+    const res=await fetch(imgbbAPI, {
+      method: "POST",
+      body: formData,
+    })
+    const data=await res.json();
+    if(data.success){
+      setImage(data.data.url);
+    }
   }
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     setError("");
     readImage(event.target.files?.[0]);
+    // console.log('Selected file:', event.target.files?.[0]);
   }
 
   function removeImage() {

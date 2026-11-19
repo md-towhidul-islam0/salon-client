@@ -1,24 +1,20 @@
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { ReactNode } from 'react';
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
+import { auth } from "@/lib/auth";
 
-export default async function AdminAuth({
-    children,
-}: {
-    children: ReactNode;
-}) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+export default async function AdminAuth({ children }: { children: ReactNode }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-    if (!session?.user) {
-        redirect('/SignIn');
-    }
+  if (!session?.user) {
+    redirect("/SignIn");
+  }
 
-    if (session.user.role !== 'admin') {
-        redirect('/unauth');
-    }
+  if (session.user.role !== "admin") {
+    redirect("/unauth");
+  }
 
-    return <>{children}</>;
+  return <>{children}</>;
 }
