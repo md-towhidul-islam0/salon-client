@@ -78,7 +78,7 @@ export default function AuthShell({
         </div>
       </div>
 
-      <div className="relative flex w-full items-center justify-center px-5 py-24 sm:px-8 lg:w-[54%]">
+      <div className="relative flex w-full items-center justify-center px-5 py-10 sm:px-8 lg:w-[54%]">
         <div className="w-full max-w-lg">
           <div className="rounded-3xl border border-border/70 bg-background/75 p-6 shadow-2xl shadow-black/5 backdrop-blur-sm sm:p-9">
             <div>

@@ -180,47 +180,7 @@ export default function SignUpPage() {
           />
         </div>
 
-        {form.password ? (
-          <div className="rounded-xl border border-border/70 bg-muted/40 px-4 py-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium">Password strength</span>
-              <span className="text-muted-foreground">
-                {passwordScore === 3
-                  ? "Strong"
-                  : passwordScore === 2
-                    ? "Good"
-                    : "Weak"}
-              </span>
-            </div>
-            <div className="mt-2 flex gap-1.5">
-              {[0, 1, 2].map((index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 flex-1 rounded-full transition-colors ${
-                    index < passwordScore ? "bg-accent" : "bg-border"
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
-              {passwordChecks.map((check) => (
-                <span
-                  key={check.label}
-                  className={`inline-flex items-center gap-1.5 text-[11px] ${
-                    check.valid ? "text-accent" : "text-muted-foreground"
-                  }`}
-                >
-                  {check.valid ? (
-                    <Check className="size-3" />
-                  ) : (
-                    <span className="size-2 rounded-full border border-current" />
-                  )}
-                  {check.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
+      
 
         {/* <div className="grid gap-5 sm:grid-cols-2">
           <div>
