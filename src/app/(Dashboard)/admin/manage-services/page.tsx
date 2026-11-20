@@ -5,97 +5,66 @@ import {
   Pencil,
   Scissors,
   Search,
-  Star,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-
+export const instant = false;
 import {
   ActionLink,
   DashboardPage,
   DashboardPanel,
-  StatusPill,
+  EmptyState,
   TableShell,
 } from "../../component/dashboard-ui";
+import ServiceStatusToggle from "./service-status-toggle";
+import { Suspense } from "react";
 
-const categories = ["All", "Hair", "Skin", "Makeup", "Spa", "Grooming"];
+interface Service {
+  _id: string;
+  name: string;
+  category: string;
+  description?: string;
+  price: number;
+  durationMinutes: number;
+  image?: string;
+  status: "active" | "inactive";
+  submittedAt?: string;
+}
 
-const services = [
-  {
-    name: "Signature Haircut",
-    category: "Hair",
-    duration: "45 min",
-    price: "৳ 800",
-    bookings: 62,
-    rating: "4.9",
-    status: "active" as const,
-  },
-  {
-    name: "Balayage & Gloss",
-    category: "Hair",
-    duration: "2 hr 30 min",
-    price: "৳ 4,200",
-    bookings: 37,
-    rating: "4.8",
-    status: "active" as const,
-  },
-  {
-    name: "Luxury Facial",
-    category: "Skin",
-    duration: "1 hr",
-    price: "৳ 1,600",
-    bookings: 41,
-    rating: "4.8",
-    status: "active" as const,
-  },
-  {
-    name: "Hair Spa & Gloss",
-    category: "Spa",
-    duration: "1 hr 15 min",
-    price: "৳ 1,900",
-    bookings: 33,
-    rating: "4.7",
-    status: "active" as const,
-  },
-  {
-    name: "Bridal Makeover",
-    category: "Makeup",
-    duration: "3 hr",
-    price: "৳ 6,500",
-    bookings: 18,
-    rating: "5.0",
-    status: "active" as const,
-  },
-  {
-    name: "Beard Sculpt & Trim",
-    category: "Grooming",
-    duration: "30 min",
-    price: "৳ 650",
-    bookings: 29,
-    rating: "4.6",
-    status: "active" as const,
-  },
-  {
-    name: "Keratin Repair",
-    category: "Hair",
-    duration: "2 hr",
-    price: "৳ 3,800",
-    bookings: 9,
-    rating: "4.5",
-    status: "pending" as const,
-  },
-  {
-    name: "Scalp Detox Ritual",
-    category: "Spa",
-    duration: "50 min",
-    price: "৳ 1,450",
-    bookings: 0,
-    rating: "—",
-    status: "pending" as const,
-  },
-];
+async function getServices(): Promise<Service[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return [];
 
-export default function ManageServicesPage() {
+  try {
+    const response = await fetch(`${baseUrl}/services`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function ManageServicesPage() {
+  const services = await getServices();
+
+  const activeCount = services.filter(
+    (service) => service.status === "active",
+  ).length;
+  const inactiveCount = services.length - activeCount;
+  const categoryFilters = [
+    "All",
+    ...Array.from(new Set(services.map((service) => service.category))).filter(
+      Boolean,
+    ),
+  ];
+
   return (
     <DashboardPage
       eyebrow="Service catalogue"
@@ -112,40 +81,34 @@ export default function ManageServicesPage() {
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Live services
           </p>
-          <p className="mt-2 text-2xl font-bold">
-            {services.filter((service) => service.status === "active").length}
-          </p>
+          <p className="mt-2 text-2xl font-bold">{activeCount}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Visible to customers
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-background p-5">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Avg. rating
+            Inactive services
           </p>
-          <p className="mt-2 flex items-center gap-1 text-2xl font-bold">
-            4.8
-            <Star
-              className="size-4 fill-amber-400 text-amber-400"
-              aria-hidden="true"
-            />
-          </p>
+          <p className="mt-2 text-2xl font-bold">{inactiveCount}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Across 229 reviews
+            Hidden from booking
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-background p-5">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Most booked
+            Total services
           </p>
-          <p className="mt-2 truncate text-lg font-bold">Signature Haircut</p>
-          <p className="mt-1 text-xs text-muted-foreground">62 bookings</p>
+          <p className="mt-2 text-2xl font-bold">{services.length}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            In your catalogue
+          </p>
         </div>
       </div>
 
       <DashboardPanel
         title="All services"
-        description="Search, edit, or retire a treatment from the catalogue."
+        description="Search, review, update status, or edit a treatment from the catalogue."
         bodyClassName="p-0"
         action={
           <div className="flex items-center gap-2">
@@ -172,7 +135,7 @@ export default function ManageServicesPage() {
         }
       >
         <div className="flex flex-wrap gap-1.5 border-b border-border px-5 py-3">
-          {categories.map((category, index) => (
+          {categoryFilters.map((category, index) => (
             <span
               key={category}
               className={
@@ -186,79 +149,105 @@ export default function ManageServicesPage() {
           ))}
         </div>
 
-        <TableShell>
-          <thead>
-            <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
-              <th className="px-5 py-3 font-medium">Service</th>
-              <th className="px-5 py-3 font-medium">Category</th>
-              <th className="px-5 py-3 font-medium">Duration</th>
-              <th className="px-5 py-3 font-medium">Price</th>
-              <th className="px-5 py-3 font-medium">Bookings</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.map((service) => (
-              <tr
-                key={service.name}
-                className="border-t border-border transition-colors hover:bg-muted/40"
-              >
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                      <Scissors className="size-3.5" aria-hidden="true" />
-                    </span>
-                    <div>
-                      <p className="font-medium">{service.name}</p>
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Star
-                          className="size-3 fill-amber-400 text-amber-400"
-                          aria-hidden="true"
-                        />
-                        {service.rating}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  {service.category}
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="size-3.5" aria-hidden="true" />
-                    {service.duration}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5 font-semibold">{service.price}</td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  {service.bookings}
-                </td>
-                <td className="px-5 py-3.5">
-                  <StatusPill status={service.status} />
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center justify-end gap-1">
-                    <Link
-                      href="/admin/add-update-service"
-                      aria-label={`Edit ${service.name}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
-                    >
-                      <Pencil className="size-3.5" aria-hidden="true" />
-                    </Link>
-                    <button
-                      type="button"
-                      aria-label={`Delete ${service.name}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger-foreground"
-                    >
-                      <Trash2 className="size-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
-                </td>
+        {services.length === 0 ? (
+          <div className="p-5">
+            <EmptyState
+              icon={Scissors}
+              title="No services found"
+              description="Add your first service to start building the catalogue, or check that your services API is reachable."
+              action={
+                <ActionLink href="/admin/add-update-service" icon={CirclePlus}>
+                  Add service
+                </ActionLink>
+              }
+            />
+          </div>
+        ) : (
+          <TableShell>
+            <thead>
+              <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+                <th className="px-5 py-3 font-medium">Service</th>
+                <th className="px-5 py-3 font-medium">Category</th>
+                <th className="px-5 py-3 font-medium">Duration</th>
+                <th className="px-5 py-3 font-medium">Price</th>
+                <th className="px-5 py-3 font-medium">Status</th>
+                <th className="px-5 py-3 text-right font-medium">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </TableShell>
+            </thead>
+            <tbody>
+              {services.map((service) => (
+                <tr
+                  key={service._id}
+                  className="border-t border-border transition-colors hover:bg-muted/40"
+                >
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent/10 text-accent">
+                        {service.image ? (
+                          // biome-ignore lint/performance/noImgElement: remote service image URL
+                          <img
+                            src={service.image}
+                            alt=""
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <Scissors className="size-4" aria-hidden="true" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{service.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {service.description?.trim() || "No description"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 text-muted-foreground">
+                    {service.category}
+                  </td>
+                  <td className="px-5 py-3.5 text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                      <Clock className="size-3.5" aria-hidden="true" />
+                      {service.durationMinutes} min
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 font-semibold whitespace-nowrap">
+                    ৳ {service.price}
+                  </td>
+                  <td className="px-5 py-3.5">
+                        <Suspense fallback={<div className="h-6 w-11 rounded-full bg-muted" />}>
+                          
+                          <ServiceStatusToggle
+                            serviceId={service._id}
+                            serviceName={service.name}
+                            initialStatus={service.status}
+                          />
+                        </Suspense>
+                     
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href="/admin/add-update-service"
+                        aria-label={`Edit ${service.name}`}
+                        className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                      >
+                        <Pencil className="size-3.5" aria-hidden="true" />
+                      </Link>
+                      <button
+                        type="button"
+                        aria-label={`Delete ${service.name}`}
+                        className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger-foreground"
+                      >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </TableShell>
+        )}
       </DashboardPanel>
     </DashboardPage>
   );
