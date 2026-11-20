@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import AuthShell from "@/components/Global/AuthShell";
+import GoogleButton from "@/components/Global/GoogleButton";
 import PasswordInput from "@/components/Global/PasswordInput";
 import TextField from "@/components/Global/TextField";
 import { signIn } from "@/lib/auth-client";
@@ -59,7 +60,28 @@ export default function SignInPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      {error ? (
+        <div
+          role="alert"
+          className="mb-5 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-foreground"
+        >
+          <Info className="mt-0.5 size-4 shrink-0" />
+          <p>{error}</p>
+        </div>
+      ) : null}
+
+      <div className="space-y-5">
+        <GoogleButton mode="signin" disabled={loading} onError={setError} />
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" aria-hidden="true" />
+          <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+            or continue with email
+          </span>
+          <span className="h-px flex-1 bg-border" aria-hidden="true" />
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-5">
         <TextField
           id="email"
           label="Email address"
@@ -91,16 +113,6 @@ export default function SignInPage() {
             Keep me signed in
           </label>
         </div>
-
-        {error ? (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-foreground"
-          >
-            <Info className="mt-0.5 size-4 shrink-0" />
-            <p>{error}</p>
-          </div>
-        ) : null}
 
         <button
           type="submit"

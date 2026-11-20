@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 
 import AuthShell from "@/components/Global/AuthShell";
+import GoogleButton from "@/components/Global/GoogleButton";
 import PasswordInput from "@/components/Global/PasswordInput";
 import TextField from "@/components/Global/TextField";
 import { signUp } from "@/lib/auth-client";
@@ -53,7 +54,6 @@ export default function SignUpPage() {
   }
 
   async function readImage(file?: File) {
-    
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       setError("Please choose an image file.");
@@ -65,13 +65,13 @@ export default function SignUpPage() {
     }
     const formData = new FormData();
     formData.append("image", file);
-    const imgbbAPI=`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
-    const res=await fetch(imgbbAPI, {
+    const imgbbAPI = `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
+    const res = await fetch(imgbbAPI, {
       method: "POST",
       body: formData,
-    })
-    const data=await res.json();
-    if(data.success){
+    });
+    const data = await res.json();
+    if (data.success) {
       setImage(data.data.url);
     }
   }
@@ -140,7 +140,28 @@ export default function SignUpPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      {error ? (
+        <div
+          role="alert"
+          className="mb-5 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-foreground"
+        >
+          <Info className="mt-0.5 size-4 shrink-0" />
+          <p>{error}</p>
+        </div>
+      ) : null}
+
+      <div className="space-y-5">
+        <GoogleButton mode="signup" disabled={loading} onError={setError} />
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" aria-hidden="true" />
+          <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+            or sign up with email
+          </span>
+          <span className="h-px flex-1 bg-border" aria-hidden="true" />
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField
             id="name"
@@ -187,8 +208,6 @@ export default function SignUpPage() {
             icon={LockKeyhole}
           />
         </div>
-
-      
 
         {/* <div className="grid gap-5 sm:grid-cols-2">
           <div>
@@ -284,16 +303,6 @@ export default function SignUpPage() {
             ) : null}
           </div>
         </div>
-
-        {error ? (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-foreground"
-          >
-            <Info className="mt-0.5 size-4 shrink-0" />
-            <p>{error}</p>
-          </div>
-        ) : null}
 
         <button
           type="submit"

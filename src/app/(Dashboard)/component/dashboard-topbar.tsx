@@ -68,13 +68,7 @@ export function DashboardTopbar() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        <Link
-          href="/"
-          className="hidden items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
-        >
-          View website
-          <ArrowUpRight className="size-3.5" aria-hidden="true" />
-        </Link>
+    
         <ThemeToggle />
       </div>
     </header>
