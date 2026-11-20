@@ -119,7 +119,7 @@ export function AppSidebar() {
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-lg leading-tight font-bold text-sidebar-foreground">
-              Heair<span className="text-accent">Salon</span>
+              Hair<span className="text-accent">Salon</span>
             </span>
             <span className="block text-[10px] tracking-[0.2em] text-sidebar-foreground/50 uppercase">
               Beauty &amp; Care

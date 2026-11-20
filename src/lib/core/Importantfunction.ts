@@ -19,3 +19,33 @@ export const getSessionByclient=async()=>{
     } = authClient.useSession() 
     return [session,isPending];
 }
+
+export const deleteItem=(itemId:string,endpoint:string)=>{
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!baseUrl) {
+      throw new Error("Missing NEXT_PUBLIC_API_URL");
+    }
+
+    return fetch(`${baseUrl}/${endpoint}/${itemId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+}
+
+
+export const getAllservicer=async()=>{
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!baseUrl) {
+      throw new Error("Missing NEXT_PUBLIC_API_URL");
+    }
+    const response = await fetch(`${baseUrl}/services`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    return data;
+} 

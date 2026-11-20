@@ -126,7 +126,7 @@ const Footer = () => {
             <Link href="/" className="inline-flex items-center gap-3">
              
               <span className="text-2xl font-bold text-white">
-                Heair<span className="text-[#e9b9ae]">Salon</span>
+                Hair<span className="text-[#e9b9ae]">Salon</span>
               </span>
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-7 text-white/60">
@@ -182,10 +182,10 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 size-4 shrink-0 text-[#e9b9ae]" />
                 <a
-                  href="mailto:hello@heairsalon.com"
+                  href="mailto:hello@HairSalon.com"
                   className="break-all transition-colors hover:text-white"
                 >
-                  hello@heairsalon.com
+                  hello@HairSalon.com
                 </a>
               </li>
             </ul>
@@ -219,7 +219,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {COPYRIGHT_YEAR} HeairSalon. All rights reserved.</p>
+          <p>© {COPYRIGHT_YEAR} HairSalon. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
             Made with
             <Heart className="size-3.5 fill-[#c48981] text-[#c48981]" />

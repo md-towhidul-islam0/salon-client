@@ -1,11 +1,4 @@
-import {
-  CirclePlus,
-  Clock,
-  Filter,
-  Scissors,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { CirclePlus, Clock, Filter, Scissors, Search } from "lucide-react";
 
 import {
   ActionLink,
@@ -14,6 +7,7 @@ import {
   EmptyState,
   TableShell,
 } from "../../component/dashboard-ui";
+import DeleteServiceButton from "./delete-service-button";
 import ServiceStatusToggle from "./service-status-toggle";
 import UpdateServices from "./updateservices";
 
@@ -196,9 +190,6 @@ export default async function ManageServicesPage() {
                       </span>
                       <div className="min-w-0">
                         <p className="truncate font-medium">{service.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {service.description?.trim() || "No description"}
-                        </p>
                       </div>
                     </div>
                   </td>
@@ -224,13 +215,10 @@ export default async function ManageServicesPage() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">
                       <UpdateServices service={service} />
-                      <button
-                        type="button"
-                        aria-label={`Delete ${service.name}`}
-                        className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger-foreground"
-                      >
-                        <Trash2 className="size-3.5" aria-hidden="true" />
-                      </button>
+                      <DeleteServiceButton
+                        serviceId={service._id}
+                        serviceName={service.name}
+                      />
                     </div>
                   </td>
                 </tr>

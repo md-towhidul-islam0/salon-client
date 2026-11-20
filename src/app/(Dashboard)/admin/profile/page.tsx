@@ -53,7 +53,7 @@ export default function AdminProfilePage() {
 async function AdminProfileContent() {
   const session = await getSessionByserver();
   const name = session?.user.name?.trim() || "Salon administrator";
-  const email = session?.user.email ?? "admin@heairsalon.com";
+  const email = session?.user.email ?? "admin@HairSalon.com";
 
   return (
     <DashboardPage

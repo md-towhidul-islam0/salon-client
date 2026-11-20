@@ -50,7 +50,7 @@ export default function SignInPage() {
       subtitle="Sign in to pick up right where you left off."
       footer={
         <>
-          New to HeairSalon?{" "}
+          New to HairSalon?{" "}
           <Link
             href="/SignUp"
             className="font-semibold text-accent hover:underline"

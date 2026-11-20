@@ -187,7 +187,7 @@ export default function CustomerOverviewPage() {
               <p className="flex items-center gap-2">
                 <MapPin className="size-4 text-accent" aria-hidden="true" />
                 <span>
-                  HeairSalon, Gulshan 1
+                  HairSalon, Gulshan 1
                   <span className="block text-xs text-muted-foreground">
                     Stylist · {nextAppointment.stylist}
                   </span>

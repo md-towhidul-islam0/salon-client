@@ -47,7 +47,7 @@ const users = [
   },
   {
     name: "Ayesha Siddika",
-    email: "ayesha@heairsalon.com",
+    email: "ayesha@HairSalon.com",
     role: "Admin",
     joined: "01 Jan 2026",
     visits: 0,

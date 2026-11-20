@@ -288,7 +288,7 @@ const roleDashboardHref = (role?: string | null) => {
 };
 
 export default function NavBar({
-  logo = "HeairSalon",
+  logo = "HairSalon",
   actions = defaultActions,
   dashboardHref,
 }: NavBarProps) {
@@ -336,7 +336,7 @@ export default function NavBar({
           className="text-xl font-bold text-foreground md:text-2xl"
         >
           <span className="text-2xl font-bold">
-            Heair<span className="text-[#f7ac9b]">Salon</span>
+            Hair<span className="text-[#f7ac9b]">Salon</span>
           </span>
         </Link>
 

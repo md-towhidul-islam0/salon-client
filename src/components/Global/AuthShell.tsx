@@ -45,7 +45,7 @@ export default function AuthShell({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/25" />
         <div className="absolute top-16 left-16 text-white/90">
-          <p className="text-lg font-bold tracking-tight">HeairSalon</p>
+          <p className="text-lg font-bold tracking-tight">HairSalon</p>
           <p className="mt-1 text-xs tracking-[0.25em] uppercase opacity-70">
             Beauty & Care
           </p>
@@ -97,7 +97,7 @@ export default function AuthShell({
             </div>
           </div>
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            © 2026 HeairSalon. Made for your calm.
+            © 2026 HairSalon. Made for your calm.
           </p>
         </div>
       </div>
