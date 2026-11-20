@@ -114,14 +114,15 @@ export default function ServicesBrowser({ services }: ServicesBrowserProps) {
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
-              <Sparkles className="size-4 text-accent" aria-hidden="true" />
               <strong className="font-semibold text-foreground">
                 {services.length}
               </strong>{" "}
               {services.length === 1 ? "service" : "services"} available
             </span>
             <span className="hidden h-1 w-1 rounded-full bg-border sm:block" />
-            <span>{visibleServices.length} showing now</span>
+            <span> <strong className="font-semibold text-foreground">
+                {visibleServices.length}
+              </strong>{" "} showing now</span>
           </div>
         </div>
       </section>
