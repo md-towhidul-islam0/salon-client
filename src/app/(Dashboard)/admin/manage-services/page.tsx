@@ -2,13 +2,11 @@ import {
   CirclePlus,
   Clock,
   Filter,
-  Pencil,
   Scissors,
   Search,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
-export const instant = false;
+
 import {
   ActionLink,
   DashboardPage,
@@ -17,7 +15,9 @@ import {
   TableShell,
 } from "../../component/dashboard-ui";
 import ServiceStatusToggle from "./service-status-toggle";
-import { Suspense } from "react";
+import UpdateServices from "./updateservices";
+
+export const instant = false;
 
 interface Service {
   _id: string;
@@ -215,25 +215,15 @@ export default async function ManageServicesPage() {
                     ৳ {service.price}
                   </td>
                   <td className="px-5 py-3.5">
-                        <Suspense fallback={<div className="h-6 w-11 rounded-full bg-muted" />}>
-                          
-                          <ServiceStatusToggle
-                            serviceId={service._id}
-                            serviceName={service.name}
-                            initialStatus={service.status}
-                          />
-                        </Suspense>
-                     
+                    <ServiceStatusToggle
+                      serviceId={service._id}
+                      serviceName={service.name}
+                      initialStatus={service.status}
+                    />
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">
-                      <Link
-                        href="/admin/add-update-service"
-                        aria-label={`Edit ${service.name}`}
-                        className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
-                      >
-                        <Pencil className="size-3.5" aria-hidden="true" />
-                      </Link>
+                      <UpdateServices service={service} />
                       <button
                         type="button"
                         aria-label={`Delete ${service.name}`}

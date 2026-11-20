@@ -136,11 +136,11 @@ export default function ServiceForm() {
       event.target.value = "";
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setImageError("Image must be 2 MB or smaller.");
-      event.target.value = "";
-      return;
-    }
+    // if (file.size > 2 * 1024 * 1024) {
+    //   setImageError("Image must be 2 MB or smaller.");
+    //   event.target.value = "";
+    //   return;
+    // }
     const formData=new FormData();
     formData.append("image", file);
     const imagebb=`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
