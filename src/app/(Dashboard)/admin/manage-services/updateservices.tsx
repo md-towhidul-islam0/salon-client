@@ -9,6 +9,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { toast } from "@/components/ui/toast"
 import {
   type ChangeEvent,
   type FormEvent,
@@ -107,7 +108,7 @@ export default function UpdateServices({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageError, setImageError] = useState<string | null>(service.image ? null : "No image selected");
+  const [imageError, setImageError] = useState<string | undefined>(service.image);
   const [mimage, setmimage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -146,7 +147,7 @@ export default function UpdateServices({
   function resetToCurrent() {
     setForm(getInitialForm(service));
     setErrors({});
-    setImageError(null);
+    setImageError(undefined);
     setImageFile(null);
     setSaved(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -186,18 +187,18 @@ export default function UpdateServices({
     //   return;
     // }
 
-     const formData=new FormData();
+    const formData = new FormData();
     formData.append("image", file);
-    const imagebb=`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
-    const res=await fetch(imagebb,{
-      method:"POST",
-      body:formData
+    const imagebb = `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGEBB_API_KEY}`;
+    const res = await fetch(imagebb, {
+      method: "POST",
+      body: formData
     });
-    const data=await res.json();
+    const data = await res.json();
     console.log(data);
     console.log("handleImageChange → file:", file);
     console.log(data.data.url);
-    setImageError(null);
+    setImageError(undefined);
     setImageFile(file);
     setmimage(data.data.url);
     console.log("handleImageChange → mimage:", mimage);
@@ -205,7 +206,7 @@ export default function UpdateServices({
 
   function removeSelectedImage() {
     setImageFile(null);
-    setImageError(null);
+    setImageError(undefined);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -246,7 +247,7 @@ export default function UpdateServices({
       price: Number(values.price),
       durationMinutes: Number(values.durationMinutes),
       status: values.status,
-      image: mimage,
+      image: mimage ?? service.image ?? null,
     };
 
     console.log("hendelupdate → updated service info:", updatedInfo);
@@ -269,19 +270,30 @@ export default function UpdateServices({
     onUpdated?.(updatedInfo);
     setSaved(true);
 
-    const res=await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service._id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service._id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(updatedInfo),
     });
-    const data=await res.json();
+    const data = await res.json();
     console.log(data);
-    if(data.acknowledged===true){
-   
-      router.refresh();
-    } 
+    if (data.acknowledged === true) {
+      console.log("Service information updated successfully.");
+      setOpen(false); // modal বন্ধ করুন
+     toast.add({
+    title: "Update successful",
+    description: "The service information has been updated successfully.",
+    type: "success",
+  });
+
+    
+      setTimeout(() => {
+        router.refresh();
+        window.location.reload();
+      }, 1000);;
+    }
   }
 
   const previewSrc = imagePreview ?? service.image ?? null;
@@ -453,7 +465,7 @@ export default function UpdateServices({
                         inputClass,
                         "resize-y",
                         errors.description &&
-                          "border-danger focus:border-danger",
+                        "border-danger focus:border-danger",
                       )}
                     />
                     {errors.description ? (
@@ -489,7 +501,7 @@ export default function UpdateServices({
                       className={cn(
                         inputClass,
                         errors.durationMinutes &&
-                          "border-danger focus:border-danger",
+                        "border-danger focus:border-danger",
                       )}
                     />
                     {errors.durationMinutes ? (
