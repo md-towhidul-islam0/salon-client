@@ -72,6 +72,7 @@ const Showservice = async ({
         .filter((category): category is string => Boolean(category)),
     ),
   ).sort((a, b) => a.localeCompare(b));
+  const activeservices = services.filter((service) => service.status === "active");
 
   return (
     <section className="relative overflow-hidden">
@@ -101,9 +102,9 @@ const Showservice = async ({
   
             <span>
               <strong className="font-semibold text-foreground">
-                {services.length}
+                {activeservices.length}
               </strong>{" "}
-              {services.length === 1 ? "service" : "services"} available
+              {activeservices.length === 1 ? "service" : "services"} available
             </span>
           </span>
           {currentCategory !== "All" ? (
@@ -122,7 +123,7 @@ const Showservice = async ({
           />
         </div>
 
-        {services.length === 0 ? (
+        {activeservices.length === 0 ? (
           <div className="mt-10 rounded-[2rem] border border-dashed border-border bg-muted/20 px-6 py-16 text-center">
             
             <p className="mt-5 text-lg font-semibold text-foreground">
@@ -142,7 +143,7 @@ const Showservice = async ({
                 : "/services";
 
               return (
-                <article
+                service.status === "active" && (<article
                   key={serviceId}
                   className="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-border bg-background shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/5"
                 >
@@ -217,7 +218,7 @@ const Showservice = async ({
                       </Link>
                     </div>
                   </div>
-                </article>
+                </article>)
               );
             })}
           </div>
