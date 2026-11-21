@@ -1,6 +1,7 @@
 import {
   Ban,
   Filter,
+  MailCheck,
   Search,
   ShieldCheck,
   UserCheck,
@@ -8,73 +9,65 @@ import {
 } from "lucide-react";
 
 import UserAvatar from "@/components/Global/UserAvatar";
+import { AllUsers } from "@/lib/core/Importantfunction";
 
 import {
   DashboardPage,
   DashboardPanel,
+  EmptyState,
   StatCard,
   StatusPill,
   TableShell,
 } from "../../component/dashboard-ui";
+import UserRoleDropdown from "./user-role-dropdown";
+import UserStatusDropdown from "./user-status-dropdown";
 
-const users = [
-  {
-    name: "Nusrat Jahan",
-    email: "nusrat@example.com",
-    role: "Customer",
-    joined: "12 Aug 2026",
-    visits: 14,
-    spent: "৳ 18,400",
-    status: "active" as const,
-  },
-  {
-    name: "Tanvir Ahmed",
-    email: "tanvir@example.com",
-    role: "Customer",
-    joined: "03 Sep 2026",
-    visits: 6,
-    spent: "৳ 5,250",
-    status: "active" as const,
-  },
-  {
-    name: "Mehjabin Chowdhury",
-    email: "mehjabin@example.com",
-    role: "Customer",
-    joined: "21 Jun 2026",
-    visits: 22,
-    spent: "৳ 31,900",
-    status: "active" as const,
-  },
-  {
-    name: "Ayesha Siddika",
-    email: "ayesha@HairSalon.com",
-    role: "Admin",
-    joined: "01 Jan 2026",
-    visits: 0,
-    spent: "—",
-    status: "active" as const,
-  },
-  {
-    name: "Farhan Kabir",
-    email: "farhan@example.com",
-    role: "Customer",
-    joined: "17 Oct 2026",
-    visits: 2,
-    spent: "৳ 1,300",
-    status: "active" as const,
-  },
-  {
-    name: "Sadia Rahman",
-    email: "sadia@example.com",
-    role: "Customer",
-    joined: "29 Jul 2026",
-    visits: 9,
-    spent: "৳ 9,750",
-    status: "blocked" as const,
-  },
-];
+interface IUser {
+  _id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+  role: string;
+  isBlocked: boolean;
+}
 
-export default function ManageUsersPage() {
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value || "—";
+  return date.toLocaleDateString("en-BD", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function normalizeRole(role: string | undefined) {
+  return (role || "customer").toLowerCase();
+}
+
+export default async function ManageUsersPage() {
+  let users: IUser[] = [];
+
+  try {
+    const res = await AllUsers();
+    const data = await res.json();
+    users = Array.isArray(data) ? (data as IUser[]) : [];
+  } catch {
+    users = [];
+  }
+
+  const totalUsers = users.length;
+  const activeCustomers = users.filter(
+    (user) => !user.isBlocked && normalizeRole(user.role) !== "admin",
+  ).length;
+  const administrators = users.filter(
+    (user) => normalizeRole(user.role) === "admin",
+  ).length;
+  const blockedAccounts = users.filter((user) => user.isBlocked).length;
+
   return (
     <DashboardPage
       eyebrow="People"
@@ -84,28 +77,28 @@ export default function ManageUsersPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total users"
-          value="1,248"
-          hint="38 joined this month"
+          value={String(totalUsers)}
+          hint="All registered accounts"
           icon={Users}
           tone="accent"
         />
         <StatCard
           label="Active customers"
-          value="1,196"
-          hint="95.8% of all accounts"
+          value={String(activeCustomers)}
+          hint="Customers with active access"
           icon={UserCheck}
           tone="emerald"
         />
         <StatCard
           label="Administrators"
-          value="4"
+          value={String(administrators)}
           hint="Full dashboard access"
           icon={ShieldCheck}
           tone="sky"
         />
         <StatCard
           label="Blocked accounts"
-          value="12"
+          value={String(blockedAccounts)}
           hint="Restricted from booking"
           icon={Ban}
           tone="rose"
@@ -117,8 +110,8 @@ export default function ManageUsersPage() {
         description="Customer and administrator accounts in one place."
         bodyClassName="p-0"
         action={
-          <div className="flex items-center gap-2">
-            <label className="relative hidden sm:block">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <label className="relative block w-full sm:w-auto">
               <span className="sr-only">Search users</span>
               <Search
                 className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
@@ -127,12 +120,12 @@ export default function ManageUsersPage() {
               <input
                 type="search"
                 placeholder="Search users..."
-                className="h-8 w-48 rounded-lg border border-border bg-background pr-2.5 pl-8 text-xs outline-none placeholder:text-muted-foreground focus:border-accent"
+                className="h-9 w-full rounded-lg border border-border bg-background pr-3 pl-8 text-xs outline-none placeholder:text-muted-foreground focus:border-accent sm:h-8 sm:w-48"
               />
             </label>
             <button
               type="button"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-8 sm:w-auto"
             >
               <Filter className="size-3.5" aria-hidden="true" />
               Filter
@@ -140,81 +133,111 @@ export default function ManageUsersPage() {
           </div>
         }
       >
-        <TableShell>
-          <thead>
-            <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
-              <th className="px-5 py-3 font-medium">User</th>
-              <th className="px-5 py-3 font-medium">Role</th>
-              <th className="px-5 py-3 font-medium">Joined</th>
-              <th className="px-5 py-3 font-medium">Visits</th>
-              <th className="px-5 py-3 font-medium">Total spent</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.email}
-                className="border-t border-border transition-colors hover:bg-muted/40"
-              >
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <UserAvatar name={user.name} size={32} />
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{user.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5">
-                  <span
-                    className={
-                      user.role === "Admin"
-                        ? "inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {user.role === "Admin" ? (
-                      <ShieldCheck className="size-3" aria-hidden="true" />
-                    ) : null}
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  {user.joined}
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  {user.visits}
-                </td>
-                <td className="px-5 py-3.5 font-semibold">{user.spent}</td>
-                <td className="px-5 py-3.5">
-                  <StatusPill status={user.status} />
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      aria-label={`${user.status === "blocked" ? "Unblock" : "Block"} ${user.name}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger-foreground"
-                    >
-                      <Ban className="size-3.5" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Promote ${user.name} to admin`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
-                    >
-                      <ShieldCheck className="size-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
-                </td>
+        {users.length === 0 ? (
+          <div className="p-5">
+            <EmptyState
+              icon={Users}
+              title="No users found"
+              description="User accounts will appear here once people register on the platform."
+            />
+          </div>
+        ) : (
+          <TableShell>
+            <thead>
+              <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+                <th className="px-5 py-3 font-medium">User</th>
+                <th className="px-5 py-3 font-medium">Role</th>
+                <th className="px-5 py-3 font-medium">Joined</th>
+                <th className="px-5 py-3 font-medium">Verification</th>
+                <th className="px-5 py-3 font-medium">Status</th>
+                <th className="px-5 py-3 text-right font-medium">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </TableShell>
+            </thead>
+            <tbody>
+              {users.map((user) => {
+                const role = normalizeRole(user.role);
+                const isAdmin = role === "admin";
+                const status = user.isBlocked ? "blocked" : "active";
+
+                return (
+                  <tr
+                    key={user._id || user.email}
+                    className="border-t border-border transition-colors hover:bg-muted/40"
+                  >
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <UserAvatar
+                          image={user.image}
+                          name={user.name}
+                          size={36}
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">
+                            {user.name || "Unnamed user"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {user.email || "No email"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={
+                          isAdmin
+                            ? "inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent ring-1 ring-inset ring-accent/20"
+                            : "inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground ring-1 ring-inset ring-border"
+                        }
+                      >
+                        {isAdmin ? (
+                          <ShieldCheck className="size-3" aria-hidden="true" />
+                        ) : null}
+                        {isAdmin ? "Admin" : "Customer"}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">
+                      {formatDate(user.createdAt)}
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={
+                          user.emailVerified
+                            ? "inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500 ring-1 ring-inset ring-emerald-500/20"
+                            : "inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-500 ring-1 ring-inset ring-amber-500/20"
+                        }
+                      >
+                        <MailCheck className="size-3" aria-hidden="true" />
+                        {user.emailVerified ? "Verified" : "Unverified"}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <StatusPill status={status} />
+                    </td>
+
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-2">
+                        <UserStatusDropdown
+                          userId={user._id}
+                          isBlocked={user.isBlocked}
+                          compact
+                        />
+                        <UserRoleDropdown
+                          userId={user._id}
+                          currentRole={user.role}
+                          compact
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </TableShell>
+        )}
       </DashboardPanel>
     </DashboardPage>
   );

@@ -19,8 +19,8 @@ import {
   StatusPill,
   TableShell,
 } from "../../component/dashboard-ui";
-import AppointmentActions from "./appointment-actions";
 import AppointmentDetailsDialog from "./appointment-details-dialog";
+import AppointmentStatusDropdown from "./appointment-status-dropdown";
 
 type Appointment = {
   _id: string;
@@ -262,7 +262,7 @@ export default async function ManageAppointmentsPage() {
                       <StatusPill status={appointmentStatus} />
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-2">
                         <AppointmentDetailsDialog
                           appointment={{
                             _id: appointment._id,
@@ -279,9 +279,10 @@ export default async function ManageAppointmentsPage() {
                             serviceCategory,
                           }}
                         />
-                        <AppointmentActions
+                        <AppointmentStatusDropdown
                           appointmentId={appointment._id}
-                          status={appointmentStatus}
+                          currentStatus={appointmentStatus}
+                          compact
                         />
                       </div>
                     </td>

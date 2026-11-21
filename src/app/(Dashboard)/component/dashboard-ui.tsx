@@ -157,7 +157,7 @@ export function DashboardPanel({
   bodyClassName,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -170,18 +170,18 @@ export function DashboardPanel({
         className,
       )}
     >
-      <header className="flex flex-col gap-2 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <header className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
           {description ? (
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="mt-0.5 break-words text-xs text-muted-foreground">
               {description}
             </p>
           ) : null}
         </div>
-        {action}
+        {action ? <div className="shrink-0">{action}</div> : null}
       </header>
-      <div className={cn("p-5", bodyClassName)}>{children}</div>
+      <div className={cn("p-4 sm:p-5", bodyClassName)}>{children}</div>
     </section>
   );
 }

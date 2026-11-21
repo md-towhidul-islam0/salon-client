@@ -73,5 +73,16 @@ export const EachUserbyId=async(id:string |null)=>{
       const data=await res.json();
       return data;
 }
+export const AllUsers=async()=>{
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;  
+    const res=await fetch(`${baseUrl}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      return res;
+}
 
 
