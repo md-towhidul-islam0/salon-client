@@ -4,6 +4,7 @@ import Footer from "@/components/Global/Footer";
 import NavBar from "@/components/Global/NavBar";
 import Banner from "@/components/Home/Banner";
 import FeatureService from "@/components/Home/feature_service";
+import SalonServiceCategories from "@/components/Home/salon_services";
 
 export default function Page() {
   return (
@@ -35,6 +36,24 @@ export default function Page() {
           }
         >
           <FeatureService />
+        </Suspense>
+        <Suspense
+          fallback={
+            <section className="mx-auto w-full max-w-7xl px-6 py-16 md:px-12 lg:px-20">
+              <div className="h-8 w-72 animate-pulse rounded-lg bg-muted" />
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+                    key={index}
+                    className="h-44 animate-pulse rounded-3xl border border-border bg-muted/40"
+                  />
+                ))}
+              </div>
+            </section>
+          }
+        >
+          <SalonServiceCategories />
         </Suspense>
       </main>
       <Footer />

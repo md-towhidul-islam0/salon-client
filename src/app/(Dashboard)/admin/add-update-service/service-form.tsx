@@ -26,13 +26,13 @@ import { cn } from "@/lib/utils";
 import { DashboardPanel } from "../../component/dashboard-ui";
 
 const categories = [
-  "Hair",
-  "Skin",
+  "Haircut & Styling",
+  "Hair Coloring",
+  "Hair Treatment",
+  "Facial & Skincare",
   "Makeup",
-  "Spa",
-  "Grooming",
-  "Nails",
-  "Bridal",
+  "Manicure & Pedicure",
+  "Spa & Massage",
 ] as const;
 
 type Category = (typeof categories)[number];
@@ -66,7 +66,7 @@ type ServiceSubmission = {
 
 const initialForm: ServiceFormState = {
   name: "",
-  category: "Hair",
+  category: "Haircut & Styling",
   description: "",
   price: "",
   duration: "45",
@@ -201,10 +201,10 @@ export default function ServiceForm() {
       setSubmitted(null);
       return;
     }
-
+    console.log("category",form.category.replace(/\s/g, "-").replace(/&/g, "1"));
     const service: ServiceSubmission = {
       name: form.name.trim(),
-      category: form.category,
+      category: form.category.replace(/\s/g, "-").replace(/&/g, "1") as Category,
       description: form.description.trim(),
       price: Number(form.price),
       durationMinutes: Number(form.duration),
@@ -253,7 +253,7 @@ export default function ServiceForm() {
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">Category</dt>
-                <dd className="font-medium">{submitted.category}</dd>
+                <dd className="font-medium">{submitted.category.replace(/-/g, " ").replace(/1/g, "&")}</dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">Price</dt>

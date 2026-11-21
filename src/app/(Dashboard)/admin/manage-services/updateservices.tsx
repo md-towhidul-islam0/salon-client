@@ -23,13 +23,13 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const categories = [
-  "Hair",
-  "Skin",
+  "Haircut & Styling",
+  "Hair Coloring",
+  "Hair Treatment",
+  "Facial & Skincare",
   "Makeup",
-  "Spa",
-  "Grooming",
-  "Nails",
-  "Bridal",
+  "Manicure & Pedicure",
+  "Spa & Massage",
 ] as const;
 
 type Category = (typeof categories)[number];
@@ -242,7 +242,7 @@ export default function UpdateServices({
   function hendelupdate(values: UpdateServiceForm): UpdateServicePayload {
     const updatedInfo: UpdateServicePayload = {
       name: values.name.trim(),
-      category: values.category.trim(),
+      category: values.category.replace(/\s/g, "-").replace(/&/g, "1") as Category,
       description: values.description.trim(),
       price: Number(values.price),
       durationMinutes: Number(values.durationMinutes),
@@ -396,7 +396,7 @@ export default function UpdateServices({
                       id={`${dialogTitleId}-category`}
                       value={form.category}
                       onChange={(event) =>
-                        update("category", event.target.value as Category)
+                        update("category", event.target.value.replace(/[\s&]/g, "") as Category)
                       }
                       className={inputClass}
                     >

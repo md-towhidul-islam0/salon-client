@@ -35,17 +35,17 @@ export const deleteItem=(itemId:string,endpoint:string)=>{
 }
 
 
-export const getAllservices=async()=>{
+export const getAllservices=async(query:string |null)=>{
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!baseUrl) {
       throw new Error("Missing NEXT_PUBLIC_API_URL");
     }
-    const response = await fetch(`${baseUrl}/services`, {
+    const response = await fetch(`${baseUrl}/services?${query}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
-    const data = await response.json();
-    return data;
+  
+    return response;
 } 
