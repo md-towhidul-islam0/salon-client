@@ -1,46 +1,70 @@
 import {
   BadgeCheck,
-  Bell,
-  KeyRound,
+  CalendarDays,
   Mail,
-  MapPin,
-  Phone,
+  MailCheck,
+  Scissors,
   ShieldCheck,
-  Sparkles,
+  Users,
 } from "lucide-react";
 import { Suspense } from "react";
 
 import UserAvatar from "@/components/Global/UserAvatar";
-import { getSessionByserver } from "@/lib/core/Importantfunction";
+import {
+  Allbookingsfunc,
+  AllUsers,
+  getAllservices,
+  getSessionByserver,
+} from "@/lib/core/Importantfunction";
 
 import {
   DashboardLoading,
   DashboardPage,
   DashboardPanel,
+  StatCard,
   StatusPill,
 } from "../../component/dashboard-ui";
 import ProfileForm from "../../component/profile-form";
 
-const securityItems = [
-  {
-    title: "Password",
-    description: "Last updated 3 months ago",
-    action: "Change",
-    icon: KeyRound,
-  },
-  {
-    title: "Two-factor authentication",
-    description: "Add an extra layer of account security",
-    action: "Enable",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Email notifications",
-    description: "Booking alerts and daily summaries",
-    action: "Manage",
-    icon: Bell,
-  },
-];
+function formatDate(value: string | Date | undefined) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-BD", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+async function getCount(getter: () => Promise<unknown>) {
+  try {
+    const data = await getter();
+    return Array.isArray(data) ? data.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function getServicesCount() {
+  try {
+    const res = await getAllservices(null);
+    const data = await res.json();
+    return Array.isArray(data) ? data.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function getUsersArray() {
+  try {
+    const res = await AllUsers();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function AdminProfilePage() {
   return (
@@ -51,161 +75,160 @@ export default function AdminProfilePage() {
 }
 
 async function AdminProfileContent() {
-  const session = await getSessionByserver();
-  const name = session?.user.name?.trim() || "Salon administrator";
-  const email = session?.user.email ?? "admin@HairSalon.com";
+  const [session, users, appointmentsCount, servicesCount] = await Promise.all([
+    getSessionByserver(),
+    getUsersArray(),
+    getCount(() => Allbookingsfunc()),
+    getServicesCount(),
+  ]);
+
+  const user = session?.user;
+  const name = user?.name?.trim() || "Salon administrator";
+  const email = user?.email ?? "No email available";
+  const image = user?.image ?? null;
+  const isBlocked = Boolean(user?.isBlocked);
+  const role = (user?.role || "admin").toLowerCase();
+  const emailVerified = Boolean(user?.emailVerified);
+  const createdAt = formatDate(user?.createdAt);
+
+  const totalCustomers = users.filter(
+    (item: { role?: string }) => (item.role || "").toLowerCase() === "customer",
+  ).length;
 
   return (
     <DashboardPage
       eyebrow="Account"
       title="My profile"
-      description="Keep your administrator details current and review the security of your account."
+      description="Manage your administrator details and review your account information."
     >
       <div className="relative overflow-hidden rounded-2xl border border-border bg-background">
-        <div className="h-28 bg-gradient-to-r from-accent/25 via-accent/10 to-transparent" />
-        <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="-mt-10 flex items-end gap-4">
+        <div className="h-24 bg-gradient-to-r from-accent/25 via-accent/10 to-transparent sm:h-28" />
+        <div className="flex flex-col gap-4 px-4 pb-5 sm:px-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="-mt-10 flex flex-col gap-3 sm:-mt-12 sm:flex-row sm:items-end sm:gap-4">
             <UserAvatar
-              image={session?.user.image}
+              image={image}
               name={name}
               size={80}
               className="ring-4 ring-background"
             />
-            <div className="pb-1">
+            <div className="min-w-0 pb-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold">{name}</h2>
-                <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase">
+                <h2 className="truncate text-xl font-bold text-foreground sm:text-2xl">
+                  {name}
+                </h2>
+                <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase ring-1 ring-inset ring-accent/20">
                   <ShieldCheck className="size-3" aria-hidden="true" />
-                  Administrator
+                  {role === "admin" ? "Administrator" : role}
                 </span>
               </div>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Mail className="size-3.5" aria-hidden="true" />
-                {email}
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{email}</span>
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-4 pb-1 text-center">
-            <div>
-              <p className="text-lg font-bold">24</p>
-              <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
-                Services
-              </p>
-            </div>
-            <div>
-              <p className="text-lg font-bold">184</p>
-              <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
-                Bookings
-              </p>
-            </div>
-            <div>
-              <p className="text-lg font-bold">1.2k</p>
-              <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
-                Customers
-              </p>
-            </div>
+
+          <div className="flex flex-wrap items-center gap-2 pb-1">
+            <StatusPill status={isBlocked ? "blocked" : "active"} />
+            <span
+              className={
+                emailVerified
+                  ? "inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500 ring-1 ring-inset ring-emerald-500/20"
+                  : "inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-500 ring-1 ring-inset ring-amber-500/20"
+              }
+            >
+              <MailCheck className="size-3" aria-hidden="true" />
+              {emailVerified ? "Email verified" : "Email unverified"}
+            </span>
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard
+          label="Total services"
+          value={String(servicesCount)}
+          hint="Services in the catalog"
+          icon={Scissors}
+          tone="accent"
+        />
+        <StatCard
+          label="Appointment requests"
+          value={String(appointmentsCount)}
+          hint="Total booking requests"
+          icon={CalendarDays}
+          tone="sky"
+        />
+        <StatCard
+          label="Registered customers"
+          value={String(totalCustomers)}
+          hint="Customer accounts"
+          icon={Users}
+          tone="emerald"
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <DashboardPanel
           className="xl:col-span-2"
           title="Personal information"
-          description="This information is visible only to the salon team."
+          description="Update your basic profile details."
         >
           <ProfileForm name={name} email={email} phone="" address="" />
         </DashboardPanel>
 
-        <div className="space-y-4">
-          <DashboardPanel title="Account details">
-            <dl className="space-y-4 text-sm">
-              <div className="flex items-start justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <BadgeCheck className="size-4" aria-hidden="true" />
-                  Status
-                </dt>
-                <dd>
-                  <StatusPill
-                    status={session?.user.isBlocked ? "blocked" : "active"}
-                  />
-                </dd>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="size-4" aria-hidden="true" />
-                  Email
-                </dt>
-                <dd className="max-w-40 truncate text-right font-medium">
-                  {email}
-                </dd>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="size-4" aria-hidden="true" />
-                  Phone
-                </dt>
-                <dd className="text-right text-muted-foreground">
-                  Not provided
-                </dd>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="size-4" aria-hidden="true" />
-                  Salon
-                </dt>
-                <dd className="max-w-40 text-right text-muted-foreground">
-                  Gulshan 1, Dhaka
-                </dd>
-              </div>
-            </dl>
-          </DashboardPanel>
+        <DashboardPanel title="Account details">
+          <dl className="space-y-4 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <BadgeCheck className="size-4" aria-hidden="true" />
+                Status
+              </dt>
+              <dd>
+                <StatusPill status={isBlocked ? "blocked" : "active"} />
+              </dd>
+            </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-accent/25 bg-accent/5 p-5">
-            <Sparkles
-              className="absolute -top-2 -right-2 size-16 text-accent/10"
-              aria-hidden="true"
-            />
-            <p className="text-sm font-semibold">Administrator tip</p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              Review blocked accounts weekly and keep service pricing aligned
-              with the website menu.
-            </p>
-          </div>
-        </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <ShieldCheck className="size-4" aria-hidden="true" />
+                Role
+              </dt>
+              <dd className="font-medium text-foreground capitalize">{role}</dd>
+            </div>
+
+            <div className="flex items-start justify-between gap-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="size-4" aria-hidden="true" />
+                Email
+              </dt>
+              <dd className="max-w-[60%] break-all text-right font-medium text-foreground">
+                {email}
+              </dd>
+            </div>
+
+            <div className="flex items-start justify-between gap-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <MailCheck className="size-4" aria-hidden="true" />
+                Verification
+              </dt>
+              <dd className="font-medium text-foreground">
+                {emailVerified ? "Verified" : "Not verified"}
+              </dd>
+            </div>
+
+            <div className="flex items-start justify-between gap-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <CalendarDays className="size-4" aria-hidden="true" />
+                Member since
+              </dt>
+              <dd className="text-right font-medium text-foreground">
+                {createdAt}
+              </dd>
+            </div>
+          </dl>
+        </DashboardPanel>
       </div>
-
-      <DashboardPanel
-        title="Security & notifications"
-        description="Protect your account and choose how you hear from us."
-      >
-        <ul className="divide-y divide-border">
-          {securityItems.map((item) => (
-            <li
-              key={item.title}
-              className="flex flex-wrap items-center justify-between gap-3 py-3.5 first:pt-0 last:pb-0"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <item.icon className="size-4" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-muted"
-              >
-                {item.action}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </DashboardPanel>
     </DashboardPage>
   );
 }
