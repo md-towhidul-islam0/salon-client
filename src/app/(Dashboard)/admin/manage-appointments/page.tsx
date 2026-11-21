@@ -1,222 +1,296 @@
 import {
-  CalendarCheck,
+  CalendarCheck2,
   CalendarClock,
   CalendarDays,
-  CheckCircle,
-  Clock,
-  X,
+  CircleDollarSign,
 } from "lucide-react";
+
+import {
+  Allbookingsfunc,
+  EachUserbyId,
+  getAllservices,
+} from "@/lib/core/Importantfunction";
 
 import {
   DashboardPage,
   DashboardPanel,
+  EmptyState,
   StatCard,
   StatusPill,
   TableShell,
 } from "../../component/dashboard-ui";
+import AppointmentActions from "./appointment-actions";
+import AppointmentDetailsDialog from "./appointment-details-dialog";
 
-const tabs = ["Today", "Upcoming", "Completed", "Cancelled"];
+type Appointment = {
+  _id: string;
+  serviceId: string;
+  customerId: string;
+  appointmentDate: string;
+  timeSlot: string;
+  message?: string;
+  servicePrice: number;
+  paymentStatus: "paid" | "unpaid";
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  createdAt: string;
+};
 
-const appointments = [
-  {
-    id: "APT-1042",
-    customer: "Nusrat Jahan",
-    email: "nusrat@example.com",
-    service: "Balayage & Gloss",
-    date: "Today, 19 Nov",
-    time: "10:30 AM",
-    stylist: "Ayesha",
-    status: "confirmed" as const,
-    amount: "৳ 4,200",
-  },
-  {
-    id: "APT-1043",
-    customer: "Tanvir Ahmed",
-    email: "tanvir@example.com",
-    service: "Signature Haircut",
-    date: "Today, 19 Nov",
-    time: "12:00 PM",
-    stylist: "Rafiq",
-    status: "pending" as const,
-    amount: "৳ 800",
-  },
-  {
-    id: "APT-1044",
-    customer: "Mehjabin Chowdhury",
-    email: "mehjabin@example.com",
-    service: "Luxury Facial",
-    date: "Today, 19 Nov",
-    time: "2:15 PM",
-    stylist: "Sadia",
-    status: "confirmed" as const,
-    amount: "৳ 1,600",
-  },
-  {
-    id: "APT-1045",
-    customer: "Farhan Kabir",
-    email: "farhan@example.com",
-    service: "Beard Sculpt & Trim",
-    date: "Tomorrow, 20 Nov",
-    time: "11:00 AM",
-    stylist: "Rafiq",
-    status: "confirmed" as const,
-    amount: "৳ 650",
-  },
-  {
-    id: "APT-1046",
-    customer: "Ishrat Jahan",
-    email: "ishrat@example.com",
-    service: "Bridal Makeover",
-    date: "Sat, 22 Nov",
-    time: "9:00 AM",
-    stylist: "Ayesha",
-    status: "pending" as const,
-    amount: "৳ 6,500",
-  },
-  {
-    id: "APT-1047",
-    customer: "Sadia Rahman",
-    email: "sadia@example.com",
-    service: "Hair Spa & Gloss",
-    date: "Sat, 22 Nov",
-    time: "4:30 PM",
-    stylist: "Sadia",
-    status: "cancelled" as const,
-    amount: "৳ 1,900",
-  },
-];
+type Customer = {
+  _id?: string;
+  name?: string;
+  email?: string;
+  image?: string;
+};
 
-export default function ManageAppointmentsPage() {
+type Service = {
+  _id?: string;
+  name?: string;
+  category?: string;
+  price?: number;
+};
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value || "—";
+  return date.toLocaleDateString("en-BD", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value || "—";
+  return date.toLocaleString("en-BD", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function formatPrice(price: number) {
+  if (!Number.isFinite(price)) return "৳ 0";
+  return `৳ ${price.toLocaleString("en-BD")}`;
+}
+
+function formatCategory(category: string | undefined) {
+  if (!category) return "General";
+  return category.replace(/-/g, " ").replace(/1/g, "&");
+}
+
+async function getServiceMap() {
+  try {
+    const response = await getAllservices(null);
+    const data = await response.json();
+    const services: Service[] = Array.isArray(data) ? data : [];
+    return new Map(
+      services
+        .filter((service) => typeof service?._id === "string")
+        .map((service) => [service._id as string, service]),
+    );
+  } catch {
+    return new Map<string, Service>();
+  }
+}
+
+async function getCustomerMap(customerIds: string[]) {
+  const uniqueIds = Array.from(new Set(customerIds.filter(Boolean)));
+  const entries = await Promise.all(
+    uniqueIds.map(async (id) => {
+      try {
+        const data = await EachUserbyId(id);
+        const customer = Array.isArray(data) ? data[0] : data;
+        return [id, (customer ?? {}) as Customer] as const;
+      } catch {
+        return [id, {} as Customer] as const;
+      }
+    }),
+  );
+
+  return new Map(entries);
+}
+
+export default async function ManageAppointmentsPage() {
+  let appointments: Appointment[] = [];
+  try {
+    const data = await Allbookingsfunc();
+    appointments = Array.isArray(data) ? (data as Appointment[]) : [];
+  } catch {
+    appointments = [];
+  }
+
+  const [customerMap, serviceMap] = await Promise.all([
+    getCustomerMap(appointments.map((appointment) => appointment.customerId)),
+    getServiceMap(),
+  ]);
+
+  const total = appointments.length;
+  const pending = appointments.filter(
+    (item) => item.status === "pending",
+  ).length;
+  const confirmed = appointments.filter(
+    (item) => item.status === "confirmed",
+  ).length;
+  const paid = appointments.filter(
+    (item) => item.paymentStatus === "paid",
+  ).length;
+
   return (
     <DashboardPage
       eyebrow="Bookings"
       title="Manage appointments"
-      description="Confirm new requests, reschedule when needed, and keep the salon calendar running smoothly."
+      description="Review appointment requests, check customer and service details, and confirm or cancel bookings."
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Today's bookings"
-          value="8"
-          hint="4 done · 4 remaining"
+          label="Total requests"
+          value={String(total)}
+          hint="All appointment requests"
           icon={CalendarDays}
           tone="accent"
         />
         <StatCard
-          label="Awaiting confirmation"
-          value="3"
-          hint="Respond within 2 hours"
+          label="Pending"
+          value={String(pending)}
+          hint="Awaiting admin confirmation"
           icon={CalendarClock}
           tone="amber"
         />
         <StatCard
-          label="This week"
-          value="26"
-          hint="3 slots still open"
-          icon={CalendarCheck}
+          label="Confirmed"
+          value={String(confirmed)}
+          hint="Ready to serve"
+          icon={CalendarCheck2}
           tone="sky"
         />
         <StatCard
-          label="Completion rate"
-          value="94%"
-          hint="Past 30 days"
-          icon={CheckCircle}
+          label="Paid"
+          value={String(paid)}
+          hint="Payment completed"
+          icon={CircleDollarSign}
           tone="emerald"
         />
       </div>
 
       <DashboardPanel
-        title="Appointment list"
-        description="Sorted by schedule. Use the row actions to confirm or cancel."
+        title="Appointment requests"
+        description="View details, confirm pending requests, or cancel pending/confirmed appointments."
         bodyClassName="p-0"
       >
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-5 py-3">
-          {tabs.map((tab, index) => (
-            <span
-              key={tab}
-              className={
-                index === 0
-                  ? "rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-white"
-                  : "rounded-full border border-border px-3 py-1 text-[11px] font-medium text-muted-foreground"
-              }
-            >
-              {tab}
-            </span>
-          ))}
-        </div>
-
-        <TableShell>
-          <thead>
-            <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
-              <th className="px-5 py-3 font-medium">Customer</th>
-              <th className="px-5 py-3 font-medium">Service</th>
-              <th className="px-5 py-3 font-medium">Schedule</th>
-              <th className="px-5 py-3 font-medium">Stylist</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 text-right font-medium">Amount</th>
-              <th className="px-5 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((appointment) => (
-              <tr
-                key={appointment.id}
-                className="border-t border-border transition-colors hover:bg-muted/40"
-              >
-                <td className="px-5 py-3.5">
-                  <p className="font-medium">{appointment.customer}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {appointment.email}
-                  </p>
-                </td>
-                <td className="px-5 py-3.5">
-                  <p className="text-muted-foreground">{appointment.service}</p>
-                  <p className="text-[11px] text-muted-foreground/70">
-                    {appointment.id}
-                  </p>
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  <p>{appointment.date}</p>
-                  <p className="inline-flex items-center gap-1 text-xs text-muted-foreground/80">
-                    <Clock className="size-3" aria-hidden="true" />
-                    {appointment.time}
-                  </p>
-                </td>
-                <td className="px-5 py-3.5 text-muted-foreground">
-                  {appointment.stylist}
-                </td>
-                <td className="px-5 py-3.5">
-                  <StatusPill status={appointment.status} />
-                </td>
-                <td className="px-5 py-3.5 text-right font-semibold">
-                  {appointment.amount}
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      aria-label={`Confirm appointment for ${appointment.customer}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-500"
-                    >
-                      <CheckCircle className="size-3.5" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Cancel appointment for ${appointment.customer}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger-foreground"
-                    >
-                      <X className="size-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
-                </td>
+        {appointments.length === 0 ? (
+          <div className="p-5">
+            <EmptyState
+              icon={CalendarDays}
+              title="No appointments found"
+              description="Appointment requests will appear here when customers book a service."
+            />
+          </div>
+        ) : (
+          <TableShell>
+            <thead>
+              <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+                <th className="px-5 py-3 font-medium">Customer</th>
+                <th className="px-5 py-3 font-medium">Service</th>
+                <th className="px-5 py-3 font-medium">Appointment</th>
+                <th className="px-5 py-3 font-medium">Price</th>
+                <th className="px-5 py-3 font-medium">Payment</th>
+                <th className="px-5 py-3 font-medium">Status</th>
+                <th className="px-5 py-3 text-right font-medium">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </TableShell>
+            </thead>
+            <tbody>
+              {appointments.map((appointment) => {
+                const customer = customerMap.get(appointment.customerId);
+                const service = serviceMap.get(appointment.serviceId);
+                const customerName = customer?.name || "Unknown customer";
+                const customerEmail = customer?.email || "No email available";
+                const serviceName = service?.name || "Unknown service";
+                const serviceCategory = formatCategory(service?.category);
+                const appointmentStatus =
+                  appointment.status === "pending" ||
+                  appointment.status === "confirmed" ||
+                  appointment.status === "cancelled" ||
+                  appointment.status === "completed"
+                    ? appointment.status
+                    : "pending";
 
-        <div className="flex flex-col gap-2 border-t border-border px-5 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>Showing 6 of 184 appointments</p>
-          <p>Page 1 of 31</p>
-        </div>
+                return (
+                  <tr
+                    key={appointment._id}
+                    className="border-t border-border transition-colors hover:bg-muted/40"
+                  >
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium">{customerName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {customerEmail}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium text-foreground">
+                        {serviceName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {serviceCategory}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5 text-muted-foreground">
+                      <p>{formatDate(appointment.appointmentDate)}</p>
+                      <p className="text-xs text-muted-foreground/80">
+                        {appointment.timeSlot}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground/70">
+                        Requested: {formatDateTime(appointment.createdAt)}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5 font-semibold whitespace-nowrap">
+                      {formatPrice(appointment.servicePrice)}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={
+                          appointment.paymentStatus === "paid"
+                            ? "inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500 ring-1 ring-inset ring-emerald-500/20"
+                            : "inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-500 ring-1 ring-inset ring-amber-500/20"
+                        }
+                      >
+                        {appointment.paymentStatus === "paid"
+                          ? "Paid"
+                          : "Unpaid"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <StatusPill status={appointmentStatus} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-1">
+                        <AppointmentDetailsDialog
+                          appointment={{
+                            _id: appointment._id,
+                            appointmentDate: appointment.appointmentDate,
+                            timeSlot: appointment.timeSlot,
+                            message: appointment.message,
+                            servicePrice: appointment.servicePrice,
+                            paymentStatus: appointment.paymentStatus,
+                            status: appointmentStatus,
+                            createdAt: appointment.createdAt,
+                            customerName,
+                            customerEmail,
+                            serviceName,
+                            serviceCategory,
+                          }}
+                        />
+                        <AppointmentActions
+                          appointmentId={appointment._id}
+                          status={appointmentStatus}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </TableShell>
+        )}
       </DashboardPanel>
     </DashboardPage>
   );
