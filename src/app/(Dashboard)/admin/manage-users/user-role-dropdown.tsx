@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
-type UserRole = "admin" | "customer";
+type UserRole = "admin" | "Customer";
 
 type UserRoleDropdownProps = {
   userId: string;
@@ -21,11 +21,11 @@ const roleOptions: {
   dotClass: string;
 }[] = [
   { value: "admin", label: "Admin", dotClass: "bg-accent" },
-  { value: "customer", label: "Customer", dotClass: "bg-sky-500" },
+  { value: "Customer", label: "Customer", dotClass: "bg-sky-500" },
 ];
 
 function normalizeRole(role: string): UserRole {
-  return role.toLowerCase() === "admin" ? "admin" : "customer";
+  return role === "admin" ? "admin" : "Customer";
 }
 
 export default function UserRoleDropdown({
@@ -97,7 +97,7 @@ export default function UserRoleDropdown({
         description:
           nextRole === "admin"
             ? "User has been promoted to admin."
-            : "User role has been changed to customer.",
+            : "User role has been changed to Customer.",
         type: "success",
       });
       router.refresh();
@@ -207,7 +207,7 @@ export default function UserRoleDropdown({
 
       {!compact ? (
         <p className="text-xs text-muted-foreground">
-          Change the account role between admin and customer.
+          Change the account role between admin and Customer.
         </p>
       ) : null}
     </div>
