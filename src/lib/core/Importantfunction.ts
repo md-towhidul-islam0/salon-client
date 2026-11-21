@@ -85,4 +85,16 @@ export const AllUsers=async()=>{
       return res;
 }
 
+export const EachUserbookingsfuncbyId=async(id:string | undefined)=>{
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;      
+    const res=await fetch(`${baseUrl}/appointments/${id}`, {
+        method: "GET",
+        headers: {  
+          "Content-Type": "application/json",
+        },
+      });
+   
+      return res;
+}
+
 

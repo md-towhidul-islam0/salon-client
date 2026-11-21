@@ -69,9 +69,11 @@ const Eachservice = async ({ params }: { params: Promise<{ id: string }> }) => {
     Boolean(service.error) ||
     !service._id;
 
-  if (invalidService) {
+ 
+   if (invalidService ) {
     redirect("/SignIn");
   }
+  
 
   const session = await getSessionByserver();
   const role = session?.user?.role;
@@ -79,7 +81,11 @@ const Eachservice = async ({ params }: { params: Promise<{ id: string }> }) => {
   const isActive = service.status === "active";
   const canBook = isActive && !isAdmin;
   const customerId = session?.user?.id ?? "";
-
+  
+  if ( session?.user?.isBlocked)
+  {
+    redirect("/unauth")
+  }
   let existingBookings: {
     serviceId?: string;
     appointmentDate?: string;
