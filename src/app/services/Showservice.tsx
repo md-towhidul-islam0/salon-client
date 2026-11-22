@@ -49,21 +49,37 @@ const Showservice = async ({
   }>;
 }) => {
   const params = await searchParams;
-  console.log("searchParams", params);
-  const res = await getAllservices(
-    params.category ? `category=${params.category}` : params.search
-      ? `search=${params.search}`
-      : params.sort
-      ? `sort=${params.sort}`
-      : null,
-  );
-  const data = await res.json();
-  console.log("data", data);
-
-  const services: ServiceItem[] = Array.isArray(data) ? data : [];
   const currentSearch = getParam(params.search);
   const currentCategory = getParam(params.category) || "All";
   const currentSort = getParam(params.sort);
+
+  const query = new URLSearchParams();
+  if (currentSearch.trim()) query.set("search", currentSearch.trim());
+  if (currentCategory && currentCategory !== "All") {
+    query.set("category", currentCategory);
+  }
+  if (currentSort) query.set("sort", currentSort);
+  const queryString = query.toString();
+
+  const res = await getAllservices(queryString || null);
+  const data = await res.json();
+
+  const services: ServiceItem[] = Array.isArray(data) ? data : [];
+  const sortedServices = [...services].sort((a, b) => {
+    if (currentSort === "price-asc") {
+      return (
+        (a.price ?? Number.POSITIVE_INFINITY) -
+        (b.price ?? Number.POSITIVE_INFINITY)
+      );
+    }
+    if (currentSort === "price-desc") {
+      return (
+        (b.price ?? Number.NEGATIVE_INFINITY) -
+        (a.price ?? Number.NEGATIVE_INFINITY)
+      );
+    }
+    return 0;
+  });
 
   const categories = Array.from(
     new Set(
@@ -72,7 +88,9 @@ const Showservice = async ({
         .filter((category): category is string => Boolean(category)),
     ),
   ).sort((a, b) => a.localeCompare(b));
-  const activeservices = services.filter((service) => service.status === "active");
+  const activeservices = sortedServices.filter(
+    (service) => service.status === "active",
+  );
 
   return (
     <section className="relative overflow-hidden">
@@ -99,7 +117,6 @@ const Showservice = async ({
 
         <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5">
-  
             <span>
               <strong className="font-semibold text-foreground">
                 {activeservices.length}
@@ -125,7 +142,6 @@ const Showservice = async ({
 
         {activeservices.length === 0 ? (
           <div className="mt-10 rounded-[2rem] border border-dashed border-border bg-muted/20 px-6 py-16 text-center">
-            
             <p className="mt-5 text-lg font-semibold text-foreground">
               No services found
             </p>
@@ -136,89 +152,95 @@ const Showservice = async ({
           </div>
         ) : (
           <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {services.map((service, index) => {
+            {sortedServices.map((service, index) => {
               const serviceId = service._id ?? `${service.name}-${index}`;
               const detailHref = service._id
                 ? `/services/${service._id}`
                 : "/services";
 
               return (
-                service.status === "active" && (<article
-                  key={serviceId}
-                  className="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-border bg-background shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/5"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-muted/40">
-                    {service.image ? (
-                      // biome-ignore lint/performance/noImgElement: remote service image URL
-                      <img
-                        src={service.image}
-                        alt={service.name ?? "Service image"}
-                        loading={index < 3 ? "eager" : "lazy"}
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <div className="flex size-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(196,137,129,0.28),transparent_45%),linear-gradient(to_bottom_right,var(--muted),var(--background))]">
-                        <div className="text-center text-muted-foreground">
-                          <Sparkles
-                            className="mx-auto size-8 text-accent/70"
-                            aria-hidden="true"
-                          />
-                          <p className="mt-2 text-xs">Photo coming soon</p>
+                service.status === "active" && (
+                  <article
+                    key={serviceId}
+                    className="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-border bg-background shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/5"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted/40">
+                      {service.image ? (
+                        // biome-ignore lint/performance/noImgElement: remote service image URL
+                        <img
+                          src={service.image}
+                          alt={service.name ?? "Service image"}
+                          loading={index < 3 ? "eager" : "lazy"}
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(196,137,129,0.28),transparent_45%),linear-gradient(to_bottom_right,var(--muted),var(--background))]">
+                          <div className="text-center text-muted-foreground">
+                            <Sparkles
+                              className="mx-auto size-8 text-accent/70"
+                              aria-hidden="true"
+                            />
+                            <p className="mt-2 text-xs">Photo coming soon</p>
+                          </div>
                         </div>
+                      )}
+
+                      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
+                        <span className="rounded-full bg-background/90 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-foreground uppercase shadow-sm backdrop-blur-sm">
+                          {service.category
+                            ?.replace(/-/g, " ")
+                            .replace(/1/g, "&") || "Service"}
+                        </span>
                       </div>
-                    )}
-
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-                      <span className="rounded-full bg-background/90 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-foreground uppercase shadow-sm backdrop-blur-sm">
-                        {service.category?.replace(/-/g, " ").replace(/1/g, "&") || "Service"}
-                      </span>
                     </div>
-                  </div>
 
-                  <div className="flex flex-1 flex-col p-5 sm:p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="text-xl font-semibold leading-snug tracking-tight text-balance text-foreground">
-                          {service.name || "Untitled service"}
-                        </h2>
-                        <p className="mt-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                          {service.category?.replace(/-/g, " ").replace(/1/g, "&") || "General"}
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h2 className="text-xl font-semibold leading-snug tracking-tight text-balance text-foreground">
+                            {service.name || "Untitled service"}
+                          </h2>
+                          <p className="mt-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                            {service.category
+                              ?.replace(/-/g, " ")
+                              .replace(/1/g, "&") || "General"}
+                          </p>
+                        </div>
+                        <p className="shrink-0 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-bold text-accent">
+                          {formatPrice(service.price)}
                         </p>
                       </div>
-                      <p className="shrink-0 rounded-full bg-accent/10 px-3 py-1.5 text-sm font-bold text-accent">
-                        {formatPrice(service.price)}
+
+                      <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                        {service.description?.trim() ||
+                          "A carefully prepared treatment designed to leave you feeling refreshed and cared for."}
                       </p>
-                    </div>
 
-                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">
-                      {service.description?.trim() ||
-                        "A carefully prepared treatment designed to leave you feeling refreshed and cared for."}
-                    </p>
+                      <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-3 py-1.5">
+                          <Clock3
+                            className="size-4 text-accent"
+                            aria-hidden="true"
+                          />
+                          {formatDuration(service.durationMinutes)}
+                        </span>
+                      </div>
 
-                    <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-3 py-1.5">
-                        <Clock3
-                          className="size-4 text-accent"
-                          aria-hidden="true"
-                        />
-                        {formatDuration(service.durationMinutes)}
-                      </span>
+                      <div className="mt-6 flex items-center justify-between gap-3 border-t border-border/70 pt-5">
+                        <span className="text-xs text-muted-foreground">
+                          Details & booking info
+                        </span>
+                        <Link
+                          href={detailHref}
+                          className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-[#a96f66]"
+                        >
+                          View details
+                          <ArrowRight className="size-4" aria-hidden="true" />
+                        </Link>
+                      </div>
                     </div>
-
-                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-border/70 pt-5">
-                      <span className="text-xs text-muted-foreground">
-                        Details & booking info
-                      </span>
-                      <Link
-                        href={detailHref}
-                        className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-[#a96f66]"
-                      >
-                        View details
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                      </Link>
-                    </div>
-                  </div>
-                </article>)
+                  </article>
+                )
               );
             })}
           </div>

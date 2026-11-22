@@ -131,13 +131,17 @@ export default function ServicesToolbar({
             aria-hidden="true"
           />
           <select
-            value={currentCategory?.replace(/-/g, " ").replace(/1/g, "&") || "All"}
+            value={
+              currentCategory?.replace(/-/g, " ").replace(/1/g, "&") || "All"
+            }
             onChange={(event) => handleCategoryChange(event.target.value)}
             className="h-12 w-full appearance-none rounded-2xl border border-border bg-background pr-10 pl-11 text-sm outline-none transition-all focus:border-accent focus:ring-4 focus:ring-accent/10"
           >
             {categoryOptions.map((option) => (
               <option key={option} value={option}>
-                {option === "All" ? "All categories" : option.replace(/-/g, " ").replace(/1/g, "&")}
+                {option === "All"
+                  ? "All categories"
+                  : option.replace(/-/g, " ").replace(/1/g, "&")}
               </option>
             ))}
           </select>
