@@ -1,4 +1,4 @@
-# SalonBook Client
+# HairSalon 
 
 A modern, full-featured salon booking web application built with Next.js. SalonBook helps customers explore salon services, book appointments, and manage their bookings, while giving admins tools to manage services, appointments, users, and transactions.
 
