@@ -71,7 +71,7 @@ const Eachservice = async ({ params }: { params: Promise<{ id: string }> }) => {
 
  
    if (invalidService ) {
-    redirect("/SignIn");
+   redirect("/unauth")
   }
   
 
