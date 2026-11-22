@@ -5,6 +5,7 @@ import NavBar from "@/components/Global/NavBar";
 import Banner from "@/components/Home/Banner";
 import FeatureService from "@/components/Home/feature_service";
 import SalonServiceCategories from "@/components/Home/salon_services";
+import Aboutus from "@/components/Global/Aboutus";
 
 export default function Page() {
   return (
@@ -54,6 +55,7 @@ export default function Page() {
           }
         >
           <SalonServiceCategories />
+          <Aboutus></Aboutus>
         </Suspense>
       </main>
       <Footer />

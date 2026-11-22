@@ -13,6 +13,8 @@ import { paymentPost } from "@/lib/core/paymentPost";
 import { stripe } from "../../lib/stripe";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
+export const instant = false;
+
 export default async function Success({
   searchParams,
 }: {

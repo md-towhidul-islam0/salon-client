@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -287,6 +287,26 @@ const roleDashboardHref = (role?: string | null) => {
   return undefined;
 };
 
+function isActiveHref(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function WithActiveLinks({
+  baseLinks,
+  children,
+}: {
+  baseLinks: NavItem[];
+  children: (links: NavItem[]) => ReactNode;
+}) {
+  const pathname = usePathname();
+  const links = baseLinks.map((link) => ({
+    ...link,
+    active: isActiveHref(pathname, link.href),
+  }));
+  return <>{children(links)}</>;
+}
+
 export default function NavBar({
   logo = "HairSalon",
   actions = defaultActions,
@@ -297,8 +317,9 @@ export default function NavBar({
   const mobileRef = useRef<HTMLDivElement>(null);
   const resolvedDashboardHref =
     dashboardHref ?? roleDashboardHref(session?.user.role);
-  const links: NavItem[] = [
-    { label: "Home", href: "/", active: true },
+
+  const baseLinks: NavItem[] = [
+    { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "Salon Details", href: "/salondetails" },
     ...(resolvedDashboardHref
@@ -341,9 +362,17 @@ export default function NavBar({
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {links.map((link) => (
-            <NavLink key={link.href} {...link} />
-          ))}
+          <Suspense
+            fallback={baseLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+          >
+            <WithActiveLinks baseLinks={baseLinks}>
+              {(links) =>
+                links.map((link) => <NavLink key={link.href} {...link} />)
+              }
+            </WithActiveLinks>
+          </Suspense>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -358,11 +387,25 @@ export default function NavBar({
               <span className="hidden h-3 w-20 animate-pulse rounded-full bg-muted lg:block" />
             </output>
           ) : session ? (
-            <UserMenu
-              user={session.user}
-              links={links}
-              dashboardHref={resolvedDashboardHref ?? "/SignIn"}
-            />
+            <Suspense
+              fallback={
+                <UserMenu
+                  user={session.user}
+                  links={baseLinks}
+                  dashboardHref={resolvedDashboardHref ?? "/SignIn"}
+                />
+              }
+            >
+              <WithActiveLinks baseLinks={baseLinks}>
+                {(links) => (
+                  <UserMenu
+                    user={session.user}
+                    links={links}
+                    dashboardHref={resolvedDashboardHref ?? "/SignIn"}
+                  />
+                )}
+              </WithActiveLinks>
+            </Suspense>
           ) : (
             <>
               <div className="hidden items-center gap-2 sm:gap-3 md:flex">
@@ -396,10 +439,23 @@ export default function NavBar({
                     id="mobile-menu"
                     className="dropdown-panel absolute top-full right-0 z-50 mt-3 max-h-[calc(100vh-6rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-border bg-background p-2 shadow-xl shadow-black/10"
                   >
-                    <MobileNavLinks
-                      links={links}
-                      onNavigate={() => setMobileOpen(false)}
-                    />
+                    <Suspense
+                      fallback={
+                        <MobileNavLinks
+                          links={baseLinks}
+                          onNavigate={() => setMobileOpen(false)}
+                        />
+                      }
+                    >
+                      <WithActiveLinks baseLinks={baseLinks}>
+                        {(links) => (
+                          <MobileNavLinks
+                            links={links}
+                            onNavigate={() => setMobileOpen(false)}
+                          />
+                        )}
+                      </WithActiveLinks>
+                    </Suspense>
                     <div className="mt-2 grid gap-2 border-t border-border pt-3">
                       {actions.map((action, index) => (
                         <Link
