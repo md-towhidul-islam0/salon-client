@@ -32,14 +32,17 @@ export default async function Success({
     customer_email,
     payment_intent,
     payment_status,
-    metadata
+    metadata,
+     amount_total,
+    currency,
+    line_items
   })
 
   if (status === 'open') {
     return redirect('/')
   }
-//     const res = await paymentPost(session_id as string)
-//   console.log(res);
+    const res = await paymentPost(session_id as string)
+  console.log(res);
 
   if (status === 'complete') {
     return (
