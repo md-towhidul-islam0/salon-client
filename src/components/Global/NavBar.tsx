@@ -300,7 +300,7 @@ export default function NavBar({
   const links: NavItem[] = [
     { label: "Home", href: "/", active: true },
     { label: "Services", href: "/services" },
-    { label: "Salon Details", href: "/salon-details" },
+    { label: "Salon Details", href: "/salondetails" },
     ...(resolvedDashboardHref
       ? [{ label: "Dashboard", href: resolvedDashboardHref }]
       : []),
