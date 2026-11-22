@@ -278,10 +278,21 @@ export function StatusPill({ status }: { status: Status }) {
   );
 }
 
-export function TableShell({ children }: { children: ReactNode }) {
+export function TableShell({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+      <table
+        className={cn(
+          "w-full min-w-[640px] border-collapse text-left text-sm",
+          className,
+        )}
+      >
         {children}
       </table>
     </div>
